@@ -153,17 +153,17 @@ exports.update = function(request, response) {
                 var html = template.HTML(topic[0].title, list,
                     `
                     <form action="/update_process" method="post">
-                    <input type="hidden" name="id" value="${topic[0].id}">
-                    <p><input type="text" name="title" placeholder="title" value="${topic[0].title}"></p>
-                    <p>
-                        <textarea name="description" placeholder="description">${topic[0].description}</textarea>
-                    </p>
-                    <p>
-                        ${template.authorSelect(authors, topic[0].author_id)}
-                    </p>
-                    <p>
-                        <input type="submit">
-                    </p>
+                        <input type="hidden" name="id" value="${topic[0].id}">
+                        <p><input type="text" name="title" placeholder="title" value="${topic[0].title}"></p>
+                        <p>
+                            <textarea name="description" placeholder="description">${topic[0].description}</textarea>
+                        </p>
+                        <p>
+                            ${template.authorSelect(authors, topic[0].author_id)}
+                        </p>
+                        <p>
+                            <input type="submit">
+                        </p>
                     </form>
                     `,
                     `<a href="/create">create</a> <a href="/update?id=${topic[0].id}">update</a>`
@@ -221,12 +221,12 @@ exports.update_process = function(request, response) {
         */
         db.query(`
         UPDATE topic SET title=?, description=?, created=NOW(), author_id=? 
-        WHERE id=${post.id}`,
-        [post.title, post.description, 1], 
+        WHERE id=?`,
+        [post.title, post.description, post.author, post.id], 
         function(error, result){
-        if(error) { throw error; }
-            response.writeHead(302, {Location: `/?id=${post.id}`});
-            response.end();
+            if(error) { throw error; }
+                response.writeHead(302, {Location: `/?id=${post.id}`});
+                response.end();
         });
     });
 }

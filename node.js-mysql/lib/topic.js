@@ -220,8 +220,7 @@ exports.update_process = function(request, response) {
         });
         */
         db.query(`
-        UPDATE topic SET title=?, description=?, created=NOW(), author_id=? 
-        WHERE id=?`,
+        UPDATE topic SET title=?, description=?, created=NOW(), author_id=? WHERE id=?`,
         [post.title, post.description, post.author, post.id], 
         function(error, result){
             if(error) { throw error; }

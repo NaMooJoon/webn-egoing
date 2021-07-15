@@ -8,7 +8,7 @@ app.use(express.static('public'))
 var topicRouter = require('./routes/topic');
 var indexRouter = require('./routes/index');
 var helmet = require('helmet');
-app.use(helmet);
+app.use(helmet());
 
 app.use(bodyParser.urlencoded({ extended: false }))
 // compress responses
@@ -39,7 +39,7 @@ app.use(function(err, req, res, next) {
   console.error(err.stack);
   res.status(500).send('Something broke!');
 });
-app.listen(3000, () => console.log('Example app listening on port 3000!'))
+app.listen(3003, () => console.log('Example app listening on port 3003!'))
 
 /*
 var http = require('http');
@@ -184,6 +184,6 @@ var app = http.createServer(function(request,response){
       response.end('Not found');
     }
 });
-app.listen(3000);
+app.listen(3003);
 
 */

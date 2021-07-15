@@ -1,112 +1,44 @@
 const express = require('express')
 const app = express()
 const fs = require('fs');
-const template = require('./lib/template.js');
-var path = require('path');
-var sanitizeHtml = require('sanitize-html');
 var qs = require('querystring');
+var bodyParser = require('body-parser')
+var compression = require('compression')
+app.use(express.static('public'))
+var topicRouter = require('./routes/topic');
+var indexRouter = require('./routes/index');
+var helmet = require('helmet');
+app.use(helmet);
 
-//app.get('/', (req, res) => res.send('Hello World!'))
-app.get('/', function(request, response){
+app.use(bodyParser.urlencoded({ extended: false }))
+// compress responses
+app.use(compression())
+// my middleware
+/*
+app.use(function(request, response, next){
   fs.readdir('./data', function(error, filelist){
-    var title = 'Welcome';
-    var description = 'Hello, Node.js';
-    var list = template.list(filelist);
-    var html = template.HTML(title, list,
-      `<h2>${title}</h2>${description}`,
-      `<a href="/create">create</a>`
-    );
-    response.send(html);
+    request.list = filelist;
+    next();
   });
 });
-
-app.get('/page/:pageId', function(request, response){
+*/
+app.get('*', function(request, response, next){
   fs.readdir('./data', function(error, filelist){
-    var filteredId = path.parse(request.params.pageId).base;
-    fs.readFile(`data/${filteredId}`, 'utf8', function(err, description){
-      var title = request.params.pageId;
-      var sanitizedTitle = sanitizeHtml(title);
-      var sanitizedDescription = sanitizeHtml(description, {
-        allowedTags:['h1']
-      });
-      var list = template.list(filelist);
-      var html = template.HTML(sanitizedTitle, list,
-        `<h2>${sanitizedTitle}</h2>${sanitizedDescription}`,
-        ` <a href="/create">create</a>
-          <a href="/update?id=${sanitizedTitle}">update</a>
-          <form action="delete_process" method="post">
-            <input type="hidden" name="id" value="${sanitizedTitle}">
-            <input type="submit" value="delete">
-          </form>`
-      );
-      response.send(html);
-    });
+    request.list = filelist;
+    next();
   });
 });
 
-app.get('/create', function(request, response){
-  fs.readdir('./data', function(error, filelist){
-    if(error) { throw error; }
-    var title = 'WEB - create';
-    var list = template.list(filelist);
-    var html = template.HTML(title, list, `
-      <form action="/create" method="post">
-        <p><input type="text" name="title" placeholder="title"></p>
-        <p>
-          <textarea name="description" placeholder="description"></textarea>
-        </p>
-        <p>
-          <input type="submit">
-        </p>
-      </form>
-    `, '');
-    response.send(html);
-  });
+app.use('/', indexRouter);
+app.use('/topic', topicRouter);
+
+app.use(function(req, res, next) {
+  res.status(404).send('Sorry cant find that!');
 });
-
-app.post('/create', function(request, response){
-  var body = '';
-  request.on('data', function(data){
-      body = body + data;
-  });
-  request.on('end', function(){
-      var post = qs.parse(body);
-      var title = post.title;
-      var description = post.description;
-      fs.writeFile(`data/${title}`, description, 'utf8', function(err){
-        response.redirect(`/page/${title}`);
-      })
-  });
+app.use(function(err, req, res, next) {
+  console.error(err.stack);
+  res.status(500).send('Something broke!');
 });
-
-app.get('/update/:updateId', function(request, response){
-  fs.readdir('./data', function(error, filelist){
-    var filteredId = path.parse(request.params.updateId).base;
-    fs.readFile(`data/${filteredId}`, 'utf8', function(err, description){
-      var title = request.params.updateId;
-      var list = template.list(filelist);
-      var html = template.HTML(title, list,
-        `
-        <form action="/update_process" method="post">
-          <input type="hidden" name="id" value="${title}">
-          <p><input type="text" name="title" placeholder="title" value="${title}"></p>
-          <p>
-            <textarea name="description" placeholder="description">${description}</textarea>
-          </p>
-          <p>
-            <input type="submit">
-          </p>
-        </form>
-        `,
-        `<a href="/create">create</a> <a href="/update?id=${title}">update</a>`
-      );
-      response.send(html);
-    });
-  });
-});
-
-
-
 app.listen(3000, () => console.log('Example app listening on port 3000!'))
 
 /*

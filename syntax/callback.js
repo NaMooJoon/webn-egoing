@@ -14,3 +14,4 @@ function slowfunc(callback){
 }
 
 slowfunc(a);
+console.log(1231);

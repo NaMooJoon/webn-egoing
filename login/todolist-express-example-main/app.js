@@ -6,8 +6,7 @@ const logger = require('morgan');
 const session = require('express-session');
 const mysqlStore = require('express-mysql-session')(session);
 const { sequelize } = require('./models');
-const env = process.env.NODE_ENV || 'development';
-const config = require(__dirname + '/config/config.json')[env];
+var options = require('config/option');
 
 sequelize
 	.authenticate()
@@ -15,15 +14,16 @@ sequelize
 	.catch((err) => { console.log(err); });
 sequelize.sync({force: false});
 const sessionStore = new mysqlStore({
-	host: config.host,
+	host: options.storageConfig.host,
 	port: 3306,
-	user: config.username,
-	password: config.password,
-	database: config.database
+	user: options.storageConfig.username,
+	password: options.storageConfig.password,
+	database: options.storageConfig.database
 });
 
 const app = express();
 const router = require('./routes');
+const { request } = require('express');
 
 // view engine setup
 app.set('views', path.join(__dirname, 'views'));
